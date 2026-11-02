@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" width="960" height="460" role="img" aria-labelledby="t d">
+  <title id="t">Per-request latency budget view</title>
+  <desc id="d">Init work runs once per Lambda container, with a cold start target of 200 ms. Seven stages then run on every invoke. No timing is measured.</desc>
+  <style>
+    text { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; fill: #e6edf3; font-size: 12px; }
+    .s { fill: #8b949e; }
+    .h { font-size: 15px; font-weight: 600; }
+    .b { font-size: 13px; }
+    .n { fill: #161b22; stroke: #30363d; stroke-width: 1; }
+    .band { fill: none; stroke: #30363d; stroke-width: 1; stroke-dasharray: 3 5; }
+    .f { fill: none; stroke: #58a6ff; stroke-width: 1.5; stroke-dasharray: 6 8; animation: dash 1.6s linear infinite; }
+    .o { fill: none; stroke: #3fb950; stroke-width: 1.5; stroke-dasharray: 6 8; animation: dash 1.6s linear infinite; }
+    .br { fill: none; stroke: #8b949e; stroke-width: 1; }
+    .a { stroke: #58a6ff; } .g { stroke: #3fb950; }
+    .d1 { animation-delay: .15s; } .d2 { animation-delay: .3s; } .d3 { animation-delay: .45s; } .d4 { animation-delay: .6s; } .d5 { animation-delay: .75s; } .d6 { animation-delay: .9s; } .d7 { animation-delay: 1.05s; }
+    @keyframes dash { to { stroke-dashoffset: -28; } }
+    @media (prefers-reduced-motion: reduce) { .f, .o { animation: none; } }
+  </style>
+  <defs>
+    <marker id="ma" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#58a6ff"/></marker>
+    <marker id="mg" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect width="960" height="460" fill="#0d1117"/>
+  <text x="30" y="30" class="h">Per-request latency budget view</text>
+
+  <rect class="band" x="20" y="48" width="920" height="170" rx="6"/>
+  <text x="35" y="70" class="b">Init, once per container (cold start only)</text>
+  <rect class="n" x="35" y="90" width="160" height="50" rx="6"/><text x="115" y="111" text-anchor="middle">Container start</text><text x="115" y="128" text-anchor="middle" class="s">Lambda image</text>
+  <rect class="n" x="235" y="90" width="160" height="50" rx="6"/><text x="315" y="111" text-anchor="middle">Import handler.py</text><text x="315" y="128" text-anchor="middle" class="s">module load</text>
+  <rect class="n a" x="435" y="90" width="160" height="50" rx="6"/><text x="515" y="111" text-anchor="middle">inference.py</text><text x="515" y="128" text-anchor="middle" class="s">create ONNX session</text>
+  <rect class="n" x="635" y="90" width="160" height="50" rx="6"/><text x="715" y="111" text-anchor="middle">glyphs_int8.onnx</text><text x="715" y="128" text-anchor="middle" class="s">model loaded once</text>
+  <path class="f" d="M195 115 H235" marker-end="url(#ma)"/>
+  <path class="f d1" d="M395 115 H435" marker-end="url(#ma)"/>
+  <path class="f d2" d="M595 115 H635" marker-end="url(#ma)"/>
+  <path class="br" d="M35 160 V172 H795 V160"/>
+  <text x="415" y="192" text-anchor="middle">Cold start: under 200 ms is a design TARGET only. Nothing is measured.</text>
+
+  <path class="f d3" d="M795 115 H925 V232 H90 V300" marker-end="url(#ma)"/>
+  <text x="500" y="226" text-anchor="middle" class="s">session ready, reused by every warm invocation</text>
+
+  <rect class="band" x="20" y="245" width="920" height="195" rx="6"/>
+  <text x="110" y="270" class="b">Per invoke, every request</text>
+  <rect class="n" x="35" y="300" width="110" height="50" rx="6"/><text x="90" y="321" text-anchor="middle">handler.py</text><text x="90" y="338" text-anchor="middle" class="s">validate</text>
+  <rect class="n" x="165" y="300" width="110" height="50" rx="6"/><text x="220" y="321" text-anchor="middle">layouts.py</text><text x="220" y="338" text-anchor="middle" class="s">ROI templates</text>
+  <rect class="n" x="295" y="300" width="110" height="50" rx="6"/><text x="350" y="321" text-anchor="middle">preprocess.py</text><text x="350" y="338" text-anchor="middle" class="s">crop regions</text>
+  <rect class="n a" x="425" y="300" width="110" height="50" rx="6"/><text x="480" y="321" text-anchor="middle">inference.py</text><text x="480" y="338" text-anchor="middle" class="s">one batched run</text>
+  <rect class="n" x="555" y="300" width="110" height="50" rx="6"/><text x="610" y="321" text-anchor="middle">extractor.py</text><text x="610" y="338" text-anchor="middle" class="s">decode glyphs</text>
+  <rect class="n" x="685" y="300" width="110" height="50" rx="6"/><text x="740" y="321" text-anchor="middle">storage.py</text><text x="740" y="338" text-anchor="middle" class="s">conditional put</text>
+  <rect class="n g" x="815" y="300" width="110" height="50" rx="6"/><text x="870" y="321" text-anchor="middle">Response</text><text x="870" y="338" text-anchor="middle" class="s">rows, timing</text>
+  <path class="f d3" d="M145 325 H165" marker-end="url(#ma)"/>
+  <path class="f d4" d="M275 325 H295" marker-end="url(#ma)"/>
+  <path class="f d5" d="M405 325 H425" marker-end="url(#ma)"/>
+  <path class="f d5" d="M535 325 H555" marker-end="url(#ma)"/>
+  <path class="f d6" d="M665 325 H685" marker-end="url(#ma)"/>
+  <path class="o d7" d="M795 325 H815" marker-end="url(#mg)"/>
+  <path class="br" d="M35 370 V382 H925 V370"/>
+  <text x="480" y="402" text-anchor="middle">invoke_ms spans these stages. cold_start.py logs init_ms and invoke_ms.</text>
+  <text x="480" y="422" text-anchor="middle" class="s">Errors exit early: 400 bad input, 413 oversized image, 503 no model loaded.</text>
+</svg>

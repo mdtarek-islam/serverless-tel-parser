@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "algorithm": "sha256",
+  "sources": {},
+  "files": {
+    "skills/caveman/SKILL.md": "33d7738e794b6eab5b7a4cfdde78ffe1309d7aef094257eb670fd89fe26f0f88",
+    "skills/ci-cd-harness/SKILL.md": "664cf8241bba507d0e2983ff5b326a379d4e315bda88b527555677eb496e1739",
+    "skills/secops-pentest/SKILL.md": "bcc54f5010a24c33e26c310f6ee73b03ef746dd80a2758b10c4d247711a3f967",
+    "skills/senior-commit/SKILL.md": "98fd7cd94d43f4c70a6511ed373a2a3e673ad6f79980beda4dc25bb70ca90920",
+    "skills/stop-slop/SKILL.md": "26e5d69e05734d774522f1c0c321be141816501e131d0ea12464f017f6f00257"
+  }
+}

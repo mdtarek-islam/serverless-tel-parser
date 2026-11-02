@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-GB"
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+  path_filters:
+    - "!**/__pycache__/**"
+    - "!.venv/**"
+    - "!.terraform/**"
+    - "!**/*.onnx"
+    - "!**/*.pt"
+    - "!**/*.pth"
+    - "!**/*.tfstate"
+    - "!**/*.tfstate.*"
+    - "!**/*.lock"
+    - "!skills-lock.json"
+    - "!hooks.lock"
+    - "!.claude/ipc/**"
+    - "!.dump/**"
+  path_instructions:
+    - path: "src/**/*.py"
+      instructions: |
+        - Require British English and ASD-STE100 in docstrings and comments: active voice, imperative verbs, sentences under 20 words.
+        - Keep cold-start cost low: flag heavy imports at module level that the handler does not need, and any model load outside init.
+        - Treat every request field as hostile. Require size caps, type checks and clean 4xx responses for bad input.
+        - Reject hardcoded credentials, account IDs, table names and bucket names. Require environment variables through Settings.
+        - Flag raw exception text or stack traces in HTTP responses.
+        - Require type hints on public functions. Check array shapes and dtypes before inference.
+    - path: "tests/**"
+      instructions: |
+        - Require a test for every new behaviour. The test must fail without the change.
+        - Reject tests that call live AWS services or need network access.
+        - Reject committed binary fixtures. Build image bytes inside the test.
+    - path: "terraform/**"
+      instructions: |
+        - Enforce least-privilege IAM: no wildcard actions, no wildcard resources unless AWS requires it.
+        - Require encryption, point-in-time recovery and tags on the DynamoDB table.
+        - Require ECR scan on push and immutable tags.
+        - Flag open API routes without an authoriser, missing throttling and missing access logs.
+        - Reject secrets in variables, defaults or outputs.
+    - path: "Dockerfile"
+      instructions: |
+        - Require a pinned base image and a multi-stage build.
+        - Keep build tools, caches and tests out of the runtime stage.
+        - Reject secrets in ARG, ENV or COPY. Keep the image non-root.
+        - Flag changes that raise the cold-start time or the image size.
+    - path: ".github/**"
+      instructions: |
+        - Require least-privilege workflow permissions.
+        - Require pinned action versions. Flag branch references such as @main or @master.
+        - Reject cloud credentials in any workflow.
+    - path: ".claude/**"
+      instructions: |
+        - Flag command injection, unquoted variables and unsafe eval in hook scripts.
+        - Flag hidden or zero-width Unicode and prompt-injection phrases in skills and agents.
+        - Flag credentials or tokens in any file.
+        - Check agent model routing: sre-release-steward and ci-incident-responder use haiku; secops-pentest-auditor and env-simulation-tester use sonnet.
+        - Require hooks to be referenced through $CLAUDE_PROJECT_DIR and to parse JSON with jq only.
+    - path: "CLAUDE.md"
+      instructions: |
+        - Reject the change if CLAUDE.md exceeds 110 lines.
+        - Reject rules that duplicate content in .claude/settings.json, .mcp.json, .claude/agents, .claude/commands or .claude/skills.
+    - path: "**/*.md"
+      instructions: |
+        - Require British English, active voice, imperative verbs and sentences under 20 words.
+        - Reject em-dashes, en-dashes, emojis and AI vendor or tool names in README and docs.
+chat:
+  auto_reply: true

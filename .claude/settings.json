@@ -1,0 +1,56 @@
+{
+  "model": "sonnet",
+  "permissions": {
+    "defaultMode": "default",
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(rmdir:*)",
+      "Bash(unlink:*)",
+      "Bash(git rm:*)",
+      "Bash(git clean:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git branch -D:*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./**/secrets/**)",
+      "Read(./**/*.pem)",
+      "Read(./**/*.key)",
+      "Read(./**/id_rsa*)",
+      "Read(./**/id_ed25519*)",
+      "Read(./**/*.tfstate)",
+      "Read(./**/*.tfstate.*)",
+      "Read(./**/*.tfvars)"
+    ]
+  },
+  "env": {
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "MAX_THINKING_TOKENS": "16000",
+    "CLAUDE_BUDGET_USD": "5"
+  },
+  "hooks": {
+    "SessionStart": [
+      { "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/ipc-bus.sh\" expire" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash", "hooks": [
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/strip-coauthor.sh\"" },
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/enforce-venv.sh\"" }
+      ] },
+      { "matcher": "Read|Grep|Glob|Bash", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-secret-files.sh\"" } ] },
+      { "matcher": "Write|Edit|MultiEdit", "hooks": [
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-prose.sh\"" },
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-claude-md.sh\"" },
+        { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/scan-skill.sh\"" }
+      ] }
+    ],
+    "PostToolUse": [
+      { "matcher": "Edit|Write|MultiEdit", "hooks": [ { "type": "command", "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/scan-skill.sh\"" } ] }
+    ]
+  }
+}
