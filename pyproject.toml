@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "serverless-tel-parser"
+version = "0.1.0"
+description = "Serverless parser for hero-shooter scoreboard screenshots on AWS Lambda."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Md Tarek Islam" }]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26,<3",
+    "pillow>=10.3",
+    "onnxruntime>=1.18,<2",
+]
+
+[project.optional-dependencies]
+aws = ["boto3>=1.34"]
+train = ["torch>=2.6", "onnx>=1.16"]
+dev = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+ignore_missing_imports = true
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", ".terraform"]

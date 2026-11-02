@@ -1,0 +1,6 @@
+*
+!requirements.txt
+!src/
+!model/
+src/**/__pycache__
+model/*.pt

@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+*.egg-info/
+build/
+dist/
+.env
+*.onnx
+*.onnx.data
+*.pt
+data/
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# Local secrets and measurements
+.env
+.env.*
+!.env.example
+docs/local/
