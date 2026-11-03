@@ -2,7 +2,7 @@
 # Build stage: install runtime wheels against the Lambda base image so the
 # compiled libraries match its glibc. Quantise only when an fp32 model is
 # present and no int8 model exists. Nothing is exported at build time.
-FROM public.ecr.aws/lambda/python:3.12 AS build
+FROM public.ecr.aws/lambda/python:3.14 AS build
 WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir --target /opt/deps -r requirements.txt
@@ -16,7 +16,7 @@ RUN mkdir -p /opt/model \
     else echo "warning: no model/glyphs_int8.onnx; the handler will return 503"; fi
 
 # Runtime stage: base image already provides boto3.
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.14
 COPY --from=build /opt/deps ${LAMBDA_TASK_ROOT}
 COPY --from=build /opt/model ${LAMBDA_TASK_ROOT}/model
 COPY src/tel_parser ${LAMBDA_TASK_ROOT}/tel_parser
