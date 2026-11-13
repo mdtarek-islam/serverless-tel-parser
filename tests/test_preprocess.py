@@ -29,7 +29,7 @@ def test_to_gray_returns_unit_range_float():
     gray = to_gray(_bars(2))
     assert gray.dtype == np.float32
     assert gray.shape == (24, 50)
-    assert 0.0 <= gray.min() and gray.max() <= 1.0
+    assert gray.min() >= 0.0 and gray.max() <= 1.0
 
 
 def test_otsu_splits_two_levels():
@@ -54,7 +54,7 @@ def test_normalise_glyph_shape_and_range():
     out = normalise_glyph(np.ones((15, 5), dtype=np.float32))
     assert out.shape == (1, GLYPH_SIZE, GLYPH_SIZE)
     assert out.dtype == np.float32
-    assert -1.0 <= out.min() and out.max() <= 1.0
+    assert out.min() >= -1.0 and out.max() <= 1.0
 
 
 def test_cell_to_glyphs_stacks_batch():

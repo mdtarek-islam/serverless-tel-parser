@@ -75,7 +75,7 @@ def test_real_session_runs_tiny_graph(tmp_path):
         [helper.make_tensor_value_info("logits", TensorProto.FLOAT, ["batch", len(CLASSES)])],
         [numpy_helper.from_array(weights, "w")],
     )
-    model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 17)])
+    model = helper.make_model(graph, opset_imports=[helper.make_opsetid("", 17)], ir_version=10)
     path = tmp_path / "tiny.onnx"
     onnx.save(model, str(path))
 

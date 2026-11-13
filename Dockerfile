@@ -2,21 +2,24 @@
 # Build stage: install runtime wheels against the Lambda base image so the
 # compiled libraries match its glibc. Quantise only when an fp32 model is
 # present and no int8 model exists. Nothing is exported at build time.
-FROM public.ecr.aws/lambda/python:3.12 AS build
+# The base image is pinned by manifest list digest (arm64 and amd64).
+# Tag: public.ecr.aws/lambda/python:3.12. Refresh with:
+#   docker buildx imagetools inspect public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.12@sha256:632b48c1083f0d4a397673fd4a22c1b2fa613f5bc2e051a96acae75bea19adf8 AS build
 WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir --target /opt/deps -r requirements.txt
 COPY model/ ./model/
 RUN mkdir -p /opt/model \
  && if [ ! -f model/glyphs_int8.onnx ] && [ -f model/glyphs_fp32.onnx ]; then \
-      pip install --no-cache-dir --target /opt/quant onnx \
+      pip install --no-cache-dir --target /opt/quant onnx==1.23.2 \
       && PYTHONPATH=/opt/deps:/opt/quant python -c "from onnxruntime.quantization import QuantType, quantize_dynamic; quantize_dynamic('model/glyphs_fp32.onnx', 'model/glyphs_int8.onnx', weight_type=QuantType.QInt8)"; \
     fi \
  && if [ -f model/glyphs_int8.onnx ]; then cp model/glyphs_int8.onnx /opt/model/; \
     else echo "warning: no model/glyphs_int8.onnx; the handler will return 503"; fi
 
 # Runtime stage: base image already provides boto3.
-FROM public.ecr.aws/lambda/python:3.12
+FROM public.ecr.aws/lambda/python:3.12@sha256:632b48c1083f0d4a397673fd4a22c1b2fa613f5bc2e051a96acae75bea19adf8
 COPY --from=build /opt/deps ${LAMBDA_TASK_ROOT}
 COPY --from=build /opt/model ${LAMBDA_TASK_ROOT}/model
 COPY src/tel_parser ${LAMBDA_TASK_ROOT}/tel_parser

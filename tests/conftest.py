@@ -1,9 +1,11 @@
-"""Shared fixtures for the test suite."""
+"""Shared fixtures and fakes for the test suite."""
 
 from __future__ import annotations
 
 import base64
 import io
+import threading
+from typing import Any
 
 import pytest
 from PIL import Image
@@ -16,6 +18,13 @@ def png_bytes(width: int = 1920, height: int = 1080) -> bytes:
     return buffer.getvalue()
 
 
+def image_bytes(fmt: str, width: int = 64, height: int = 64) -> bytes:
+    """Return a small grey image encoded in ``fmt``."""
+    buffer = io.BytesIO()
+    Image.new("RGB", (width, height), (90, 90, 90)).save(buffer, format=fmt)
+    return buffer.getvalue()
+
+
 @pytest.fixture()
 def screenshot() -> Image.Image:
     return Image.new("RGB", (1920, 1080), (12, 14, 20))
@@ -24,6 +33,14 @@ def screenshot() -> Image.Image:
 @pytest.fixture()
 def png_b64() -> str:
     return base64.b64encode(png_bytes()).decode("ascii")
+
+
+class FakeClientError(Exception):
+    """Mimic a botocore ClientError: a ``response`` dict with an error code."""
+
+    def __init__(self, code: str, message: str = "", **extra: Any) -> None:
+        super().__init__(message or code)
+        self.response: dict[str, Any] = {"Error": {"Code": code, "Message": message}, **extra}
 
 
 class FakeRecogniser:
@@ -49,21 +66,45 @@ class FakeRecogniser:
 
 
 class FakeDynamoClient:
-    """Record put_item calls. Raise a conditional failure on duplicates."""
+    """Thread-safe fake of ``transact_write_items`` with conditional puts.
 
-    def __init__(self) -> None:
+    ``failures`` holds exceptions to raise, one per call, before the
+    transaction is applied.
+    """
+
+    def __init__(self, failures: list[BaseException] | None = None) -> None:
         self.requests: list[dict] = []
-        self._keys: set[tuple[str, str]] = set()
+        self.items: dict[tuple[str, str], dict] = {}
+        self.failures = list(failures or [])
+        self._lock = threading.Lock()
 
-    def put_item(self, **request):
-        key = (request["Item"]["match_id"]["S"], request["Item"]["player_slot"]["N"])
-        if key in self._keys:
-            error = Exception("ConditionalCheckFailedException")
-            error.response = {"Error": {"Code": "ConditionalCheckFailedException"}}
-            raise error
-        self._keys.add(key)
-        self.requests.append(request)
-        return {}
+    def transact_write_items(self, **request):
+        with self._lock:
+            self.requests.append(request)
+            if self.failures:
+                raise self.failures.pop(0)
+            puts = [entry["Put"] for entry in request["TransactItems"]]
+            keys = [(put["Item"]["match_id"]["S"], put["Item"]["player_slot"]["N"]) for put in puts]
+            reasons = [{"Code": "ConditionalCheckFailed" if key in self.items else "None"} for key in keys]
+            if any(reason["Code"] != "None" for reason in reasons):
+                raise FakeClientError("TransactionCanceledException", "cancelled", CancellationReasons=reasons)
+            for key, put in zip(keys, puts, strict=True):
+                self.items[key] = put["Item"]
+            return {}
+
+
+class FakeQueueClient:
+    """Record ``send_message`` calls. Raise ``error`` when it is set."""
+
+    def __init__(self, error: BaseException | None = None) -> None:
+        self.messages: list[dict] = []
+        self.error = error
+
+    def send_message(self, **request):
+        if self.error is not None:
+            raise self.error
+        self.messages.append(request)
+        return {"MessageId": "1"}
 
 
 @pytest.fixture()

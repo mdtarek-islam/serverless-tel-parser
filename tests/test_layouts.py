@@ -12,9 +12,9 @@ def test_boxes_scale_linearly_with_resolution(game):
     small = cell_boxes(resolve_layout(game, 1920, 1080), 1920, 1080)
     large = cell_boxes(resolve_layout(game, 3840, 2160), 3840, 2160)
     assert len(small) == len(large)
-    for row_small, row_large in zip(small, large):
+    for row_small, row_large in zip(small, large, strict=True):
         for field in FIELDS:
-            for a, b in zip(row_small[field], row_large[field]):
+            for a, b in zip(row_small[field], row_large[field], strict=True):
                 assert abs(2 * a - b) <= 1
 
 

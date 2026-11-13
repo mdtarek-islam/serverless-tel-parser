@@ -16,6 +16,7 @@ from typing import Any
 
 from . import GLYPH_SIZE
 
+MAX_IR_VERSION = 10  # Read by onnxruntime 1.18 and later.
 INPUT_NAME = "glyphs"
 OUTPUT_NAME = "logits"
 
@@ -36,6 +37,22 @@ def export(model: Any, out_path: str) -> None:
         dynamo=True,
         external_data=False,
     )
+    _finalise(out_path)
+
+
+def _finalise(path: str) -> None:
+    """Cap the IR version and drop stale shape hints.
+
+    A low IR version lets older onnxruntime builds load the graph. The
+    exporter's intermediate shape hints clash with shape inference during
+    quantisation, so quantisation re-derives them.
+    """
+    import onnx
+
+    graph = onnx.load(path)
+    graph.ir_version = min(graph.ir_version, MAX_IR_VERSION)
+    del graph.graph.value_info[:]
+    onnx.save(graph, path)
 
 
 def quantise(fp32_path: str, int8_path: str) -> None:

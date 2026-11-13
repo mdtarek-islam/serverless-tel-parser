@@ -27,10 +27,19 @@ data "aws_iam_policy_document" "parser" {
     resources = ["${aws_cloudwatch_log_group.parser.arn}:*"]
   }
 
+  # PutItem also covers the Put actions inside a transact_write_items call.
   statement {
     sid       = "StatsPut"
     actions   = ["dynamodb:PutItem"]
     resources = [aws_dynamodb_table.stats.arn]
+  }
+
+  # One queue. The runtime sends failed writes here. Lambda sends failed
+  # asynchronous invocations here as the dead letter target.
+  statement {
+    sid       = "FailedWritesSend"
+    actions   = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.failed_writes.arn]
   }
 
   dynamic "statement" {
@@ -58,11 +67,20 @@ resource "aws_lambda_function" "parser" {
   memory_size   = var.memory_mb
   timeout       = var.timeout_seconds
 
+  # -1 removes the cap. Any other value needs account quota headroom.
+  reserved_concurrent_executions = var.reserved_concurrency
+
+  dead_letter_config {
+    target_arn = aws_sqs_queue.failed_writes.arn
+  }
+
   environment {
     variables = {
-      TEL_TABLE_NAME        = aws_dynamodb_table.stats.name
-      TEL_SCREENSHOT_BUCKET = var.screenshot_bucket
-      TEL_LOG_LEVEL         = "INFO"
+      TEL_TABLE_NAME              = aws_dynamodb_table.stats.name
+      TEL_SCREENSHOT_BUCKET       = var.screenshot_bucket
+      TEL_MAX_IMAGE_PIXELS        = tostring(var.max_image_pixels)
+      TEL_FAILED_WRITES_QUEUE_URL = aws_sqs_queue.failed_writes.url
+      TEL_LOG_LEVEL               = "INFO"
     }
   }
 

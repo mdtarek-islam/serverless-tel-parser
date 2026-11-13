@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol, cast
 
 import numpy as np
 from PIL import Image
@@ -69,7 +69,7 @@ def train(dataset: GlyphDataset, out_path: str, epochs: int = 20, batch_size: in
     if len(dataset) == 0:
         raise ValueError("dataset is empty")
     model = build_model()
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    loader = DataLoader(cast(Any, dataset), batch_size=batch_size, shuffle=True)
     optimiser = torch.optim.AdamW(model.parameters(), lr=lr)
     loss_fn = torch.nn.CrossEntropyLoss()
     for epoch in range(epochs):
@@ -81,7 +81,7 @@ def train(dataset: GlyphDataset, out_path: str, epochs: int = 20, batch_size: in
             loss = loss_fn(logits, labels)
             loss.backward()
             optimiser.step()
-            loss_sum += float(loss) * labels.shape[0]
+            loss_sum += loss.item() * labels.shape[0]
             correct += int((logits.argmax(1) == labels).sum())
             total += labels.shape[0]
         print(f"epoch {epoch + 1}/{epochs} loss {loss_sum / total:.4f} train_acc {correct / total:.4f}")

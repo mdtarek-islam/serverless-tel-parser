@@ -15,3 +15,8 @@ output "stats_table_name" {
 output "lambda_function_name" {
   value = aws_lambda_function.parser.function_name
 }
+
+output "failed_writes_queue_url" {
+  description = "Queue that holds stats rows the function could not write."
+  value       = aws_sqs_queue.failed_writes.url
+}

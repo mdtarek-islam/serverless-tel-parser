@@ -4,6 +4,9 @@ resource "aws_dynamodb_table" "stats" {
   hash_key     = "match_id"
   range_key    = "player_slot"
 
+  # Stats are kept. No TTL is set on purpose.
+  deletion_protection_enabled = true
+
   attribute {
     name = "match_id"
     type = "S"

@@ -37,7 +37,8 @@ def test_good_event_returns_rows_and_timing(png_b64, fake_recogniser, settings):
 
 
 def test_base64_wrapped_body_is_accepted(png_b64, fake_recogniser, settings):
-    response = handle(_event({"image_base64": png_b64, "game": "marvel_rivals"}, is_b64=True), fake_recogniser, None, settings)
+    event = _event({"image_base64": png_b64, "game": "marvel_rivals"}, is_b64=True)
+    response = handle(event, fake_recogniser, None, settings)
     assert response["statusCode"] == 200
 
 
@@ -51,12 +52,13 @@ def test_match_id_persists_rows(png_b64, fake_recogniser, fake_dynamo, settings)
 def test_s3_key_uses_fetcher(fake_recogniser, settings):
     seen = {}
 
-    def fetch(bucket, key):
+    def fetch(bucket, key, max_bytes):
         seen["args"] = (bucket, key)
         return png_bytes()
 
     s3_settings = Settings(model_path="m", table_name="t", screenshot_bucket="shots")
-    response = handle(_event({"s3_key": "a/b.png", "game": "overwatch"}), fake_recogniser, None, s3_settings, fetch_s3=fetch)
+    event = _event({"s3_key": "a/b.png", "game": "overwatch"})
+    response = handle(event, fake_recogniser, None, s3_settings, fetch_s3=fetch)
     assert response["statusCode"] == 200
     assert seen["args"] == ("shots", "a/b.png")
 

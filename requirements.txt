@@ -1,4 +1,9 @@
 # Lambda runtime. boto3 ships with the Lambda Python base image.
-numpy>=1.26,<3
-pillow>=10.3
-onnxruntime>=1.18,<2
+# Exact pins. Installed on Python 3.12 (arm64 and x86_64 wheels) and clean in pip-audit.
+numpy==2.5.4
+pillow==13.0.0
+onnxruntime==1.31.1
+# Transitive dependencies of onnxruntime, pinned so every build matches.
+flatbuffers==25.12.19
+packaging==26.3
+protobuf==7.36.2

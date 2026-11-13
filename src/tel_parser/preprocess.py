@@ -75,7 +75,7 @@ def normalise_glyph(glyph: np.ndarray, size: int = GLYPH_SIZE) -> np.ndarray:
     canvas = np.zeros((side, side), dtype=np.float32)
     top, left = (side - height) // 2, (side - width) // 2
     canvas[top : top + height, left : left + width] = glyph
-    resized = Image.fromarray((canvas * 255).astype(np.uint8)).resize((size, size), Image.BILINEAR)
+    resized = Image.fromarray((canvas * 255).astype(np.uint8)).resize((size, size), Image.Resampling.BILINEAR)
     scaled = np.asarray(resized, dtype=np.float32) / 255.0
     return ((scaled - 0.5) / 0.5)[None, :, :]
 
