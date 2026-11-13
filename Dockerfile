@@ -5,7 +5,7 @@
 # The base image is pinned by manifest list digest (arm64 and amd64).
 # Tag: public.ecr.aws/lambda/python:3.12. Refresh with:
 #   docker buildx imagetools inspect public.ecr.aws/lambda/python:3.12
-FROM public.ecr.aws/lambda/python:3.12@sha256:632b48c1083f0d4a397673fd4a22c1b2fa613f5bc2e051a96acae75bea19adf8 AS build
+FROM public.ecr.aws/lambda/python:3.15@sha256:4fbad1f61c74026f42a6b071ce3e103f2b419b8f73e724ef622cacc85e9f67d6 AS build
 WORKDIR /build
 COPY requirements.txt .
 RUN pip install --no-cache-dir --target /opt/deps -r requirements.txt
@@ -19,7 +19,7 @@ RUN mkdir -p /opt/model \
     else echo "warning: no model/glyphs_int8.onnx; the handler will return 503"; fi
 
 # Runtime stage: base image already provides boto3.
-FROM public.ecr.aws/lambda/python:3.12@sha256:632b48c1083f0d4a397673fd4a22c1b2fa613f5bc2e051a96acae75bea19adf8
+FROM public.ecr.aws/lambda/python:3.15@sha256:4fbad1f61c74026f42a6b071ce3e103f2b419b8f73e724ef622cacc85e9f67d6
 COPY --from=build /opt/deps ${LAMBDA_TASK_ROOT}
 COPY --from=build /opt/model ${LAMBDA_TASK_ROOT}/model
 COPY src/tel_parser ${LAMBDA_TASK_ROOT}/tel_parser
